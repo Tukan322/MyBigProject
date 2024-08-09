@@ -1,5 +1,5 @@
 from random import random
-
+import Utility
 
 class Pokemon:
 
@@ -9,7 +9,7 @@ class Pokemon:
         self.health = 0
         self.current_health = 0
         self.attack = 0
-        self.normAttack = 0
+        self.norm_attack = 0
         self.speed = 0
         self.level = 0
         self.workUpCountBuffed = 0
@@ -17,10 +17,12 @@ class Pokemon:
 
     # base Attack
     def Attack(self, poke):
-        print(self.name, "использует обычную атаку")
+        s = ""
+        s += self.name, "использует обычную атаку \n"
         hp_before_attack = poke.current_health
         poke.current_health -= self.attack
-        print("Нанесено", hp_before_attack - poke.current_health, "урона")
+        s += "Нанесено", hp_before_attack - poke.current_health, "урона\n"
+        return s
 
 
 class Furfrou(Pokemon):
@@ -45,28 +47,32 @@ class Furfrou(Pokemon):
         self.norm_speed = self.speed
 
     def workup(self):
-        print("Покемон", self.name, "использовал усиление")
+        s = ""
+        s += "Покемон", self.name, "использовал усиление\n"
         self.attack = self.attack * self.workup_multi
         self.workUpCountBuffed = 3
-        print("Текущее значение атаки:", self.attack)
+        s += "Текущее значение атаки:", self.attack, "\n"
         self.now_cd_workup = 0
+        return s
 
     def rest(self):
+        s = ""
         before_heal = self.current_health
-        print("Покемон", self.name, "использовал лечение")
+        s += "Покемон", self.name, "использовал лечение \n"
         if self.current_health < self.health / 2:
             self.current_health += self.health/2
         else:
             self.current_health = self.health
-        print(self.name, "восстановил", self.current_health - before_heal, "здоровья")
+        s += self.name, "восстановил", self.current_health - before_heal, "здоровья\n"
+        return s
 
     def auto_battle(self, poke):
         attacked = False
-
+        ret = ""
         if not attacked:
             if self.now_cd_workup >= self.cd_workup:
                 if random() < 0.6:
-                    self.workup()
+                    ret += self.workup()
                     attacked = True
 
         if not attacked:
@@ -78,7 +84,7 @@ class Furfrou(Pokemon):
         if not attacked:
             self.Attack(poke)
 
-
-
+        Utility.buffCheck(self)
+        return ret
 
 
