@@ -27,7 +27,7 @@ class Pokemon:
 
 class Furfrou(Pokemon):
 
-    base_health = 25
+    base_health = 200
     base_attack = 8
     base_speed = 4
     cd_rest = 3
@@ -50,7 +50,7 @@ class Furfrou(Pokemon):
         s = ""
         s += "Покемон " + self.name + " использовал усиление\n"
         self.attack = self.attack * self.workup_multi
-        self.workUpCountBuffed = 3
+        self.workUpCountBuffed = 4
         s += "Текущее значение атаки: " + str(self.attack) + "\n"
         self.now_cd_workup = 0
         return s
@@ -59,21 +59,25 @@ class Furfrou(Pokemon):
         s = ""
         before_heal = self.current_health
         s += "Покемон " + self.name + " использовал лечение \n"
-        if self.current_health < self.health / 2:
-            self.current_health += self.health/2
+        if self.current_health < self.health - self.health/10:
+            self.current_health += self.health/10
         else:
             self.current_health = self.health
         s += self.name + " восстановил " + str(self.current_health - before_heal) + " здоровья\n"
+        self.now_cd_rest = 0
         return s
 
     def auto_battle(self, poke):
         attacked = False
         ret = ""
+        self.now_cd_workup += 1
+        self.now_cd_rest += 1
         if not attacked:
             if self.now_cd_workup >= self.cd_workup:
                 if random() < 0.6:
                     ret += self.workup()
                     attacked = True
+                    self.now_cd_workup = 0
 
         if not attacked:
             if self.now_cd_rest >= self.cd_rest:
@@ -81,10 +85,10 @@ class Furfrou(Pokemon):
                     ret += self.rest()
                     attacked = True
 
+
         if not attacked:
             ret += self.Attack(poke)
 
-        Utility.buffCheck(self)
         return ret
 
 

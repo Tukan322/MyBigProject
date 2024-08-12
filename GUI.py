@@ -1,6 +1,25 @@
 from tkinter import *
 
 import Pokemons
+import Utility
+
+
+def cd_change_heal(but, i):
+    if i > 0:
+        but['text'] = "heal" + "(" + str(i) + ")" + "\n if you press it while it has CD, you'll auto attack"
+        but['bg'] = '#555555'
+    else:
+        but['text'] = "heal"
+        but['bg'] = "#ffffff"
+
+
+def cd_change_workup(but, i):
+    if i > 0:
+        but['text'] = "powerup" + "(" + str(i) + ")" + "\n if you press it while it has CD, you'll auto attack"
+        but['bg'] = '#555555'
+    else:
+        but['text'] = "powerup"
+        but['bg'] = "#ffffff"
 
 
 class Menu:
@@ -14,6 +33,8 @@ class Menu:
         self.rightFrame = Frame(self.main)
         self.left_text = Text()
         self.right_text = Text()
+        self.heal_button = Button()
+        self.powerup_button = Button()
 
     # return to main menu
     def options_return(self, *args):
@@ -76,10 +97,23 @@ class Menu:
             self.winning_screen(False)
             return
 
+        s = Utility.buffCheck(poke1)
+        s += Utility.buffCheck(poke2)
+        self.textbox.insert(1.0, s)
+        self.textbox.tag_add('title', 1.0, 'end')
+        self.textbox.tag_config('title', justify=CENTER)
+
+        cd_change_heal(self.heal_button, Utility.cooldown_check_rest(poke1))
+        cd_change_workup(self.powerup_button, Utility.cooldown_check_workup(poke1))
+
         self.update_status(poke1)
         self.update_status_enemy(poke2)
 
     def heal_but(self, poke1, poke2):
+        if poke1.now_cd_rest < poke1.cd_rest:
+            self.attack_enemy(poke1, poke2)
+            return
+
         s1 = poke1.rest()
         self.textbox.insert(1.0, s1)
         self.textbox.tag_add('title', 1.0, 'end')
@@ -94,10 +128,23 @@ class Menu:
             self.winning_screen(False)
             return
 
+        cd_change_heal(self.heal_button, Utility.cooldown_check_rest(poke1))
+        cd_change_workup(self.powerup_button, Utility.cooldown_check_workup(poke1))
+
+        s = Utility.buffCheck(poke1)
+        s += Utility.buffCheck(poke2)
+        self.textbox.insert(1.0, s)
+        self.textbox.tag_add('title', 1.0, 'end')
+        self.textbox.tag_config('title', justify=CENTER)
+
         self.update_status(poke1)
         self.update_status_enemy(poke2)
 
     def powerup_but(self, poke1, poke2):
+        if poke1.now_cd_workup < poke1.cd_workup:
+            self.attack_enemy(poke1, poke2)
+            return
+
         s1 = poke1.workup()
         self.textbox.insert(1.0, s1)
         self.textbox.tag_add('title', 1.0, 'end')
@@ -111,6 +158,15 @@ class Menu:
         if self.death_check(poke1):
             self.winning_screen(False)
             return
+
+        cd_change_heal(self.heal_button, Utility.cooldown_check_rest(poke1))
+        cd_change_workup(self.powerup_button, Utility.cooldown_check_workup(poke1))
+
+        s = Utility.buffCheck(poke1)
+        s += Utility.buffCheck(poke2)
+        self.textbox.insert(1.0, s)
+        self.textbox.tag_add('title', 1.0, 'end')
+        self.textbox.tag_config('title', justify=CENTER)
 
         self.update_status(poke1)
         self.update_status_enemy(poke2)
@@ -135,8 +191,8 @@ class Menu:
     def update_status_enemy(self, poke):
         self.right_text.delete(1.0, "end")
         right_info = (poke.name + "\n" +
-                     "HP: " + str(poke.current_health) + "\n" +
-                     "Attack value: " + str(poke.attack))
+                      "HP: " + str(poke.current_health) + "\n" +
+                      "Attack value: " + str(poke.attack))
         self.right_text.insert(1.0, right_info)
         self.right_text.tag_add('title', 1.0, 'end')
         self.right_text.tag_config('title', justify=CENTER)
@@ -178,8 +234,6 @@ class Menu:
         self.leftFrame.destroy()
         self.rightFrame.destroy()
         self.main_menu()
-
-
 
     # main menu window
     def main_menu(self):
@@ -294,17 +348,29 @@ class Menu:
         default_attack_button.bind("<Button-1>",
                                    lambda e, p1=your_poke, p2=enemy_poke: self.attack_enemy(p1, p2))
         default_attack_button.place(x=0, y=0, width=1000, height=100)
+        default_attack_button['bg'] = "#ffffff"
 
-        heal_button = Button(self.panelFrame, text="heal")
-        heal_button.bind("<Button-1>",
-                         lambda e, p1=your_poke, p2=enemy_poke: self.heal_but(p1, p2))  # add func name
-        heal_button.place(x=0, y=100, width=1000, height=100)
+        self.heal_button = Button(self.panelFrame, text="heal")
+        self.heal_button.bind("<Button-1>",
+                              lambda e, b=self.heal_button, p1=your_poke, p2=enemy_poke: self.heal_but(p1, p2))
+        self.heal_button.place(x=0, y=100, width=1000, height=100)
+        self.heal_button['bg'] = "#ffffff"
 
-        powerup_button = Button(self.panelFrame, text="power up")
-        powerup_button.bind("<Button-1>",
-                            lambda e, p1=your_poke, p2=enemy_poke: self.powerup_but(p1, p2))  # add func name
-        powerup_button.place(x=0, y=200, width=1000, height=100)
+        self.powerup_button = Button(self.panelFrame, text="power up")
+        self.powerup_button.bind("<Button-1>",
+                                 lambda e, b=self.powerup_button, p1=your_poke, p2=enemy_poke: self.powerup_but(p1, p2))
+        self.powerup_button.place(x=0, y=200, width=1000, height=100)
+        self.powerup_button['bg'] = "#ffffff"
 
         options_button = Button(self.panelFrame, text="main menu")
         options_button.bind("<Button-1>", self.options_return)
         options_button.place(x=0, y=300, width=1000, height=100)
+        options_button['bg'] = "#ffffff"
+
+
+"""
+        default_attack_button = Button(self.panelFrame, text="attack")
+        heal_button = Button(self.panelFrame, text="heal")
+        powerup_button = Button(self.panelFrame, text="power up")
+        options_button = Button(self.panelFrame, text="main menu")
+"""
