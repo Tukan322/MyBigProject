@@ -1,0 +1,5 @@
+- Add database (SQL)
+- Database should contain all entity info and info about owning entity and level
+- Add several fights till boss
+- Add more variants of playable entities and enemies
+- Make some images to fight window and winning/losing screen
